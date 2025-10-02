@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>420 Cookiez | Cart & Checkout</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      max-width: 1000px;
+      margin: auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .cart-section, .checkout-section {
+      flex: 1 1 450px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+
+    .total {
+      font-weight: bold;
+      margin-top: 15px;
+      font-size: 1.1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      margin-top: 4px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Cart Section -->
+    <div class="cart-section">
+      <h2>Your Cart</h2>
+      <ul id="cart-list"></ul>
+      <div class="total" id="cart-total">Total: Kshs 0.00</div>
+    </div>
+
+    <!-- Checkout Section -->
+    <div class="checkout-section">
+      <h2>Checkout</h2>
+      <form id="checkout-form">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" required>
+
+        <label for="address">Delivery Address</label>
+        <textarea id="address" rows="3" required></textarea>
+
+        <label for="payment">Payment Method</label>
+        <select id="payment" required>
+          <option value="">-- Select --</option>
+          <option value="mpesa">M-Pesa</option>
+          <option value="card">Credit Card</option>
+          <option value="cod">Cash on Delivery</option>
+        </select>
+
+        <button type="submit">Place Order</button>
+        <div class="message" id="message"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function getCart() {
+      return JSON.parse(localStorage.getItem('cart') || '[]');
+    }
+
+    function renderCart() {
+      const cart = getCart();
+      const list = document.getElementById('cart-list');
+      const totalBox = document.getElementById('cart-total');
+      list.innerHTML = '';
+      let total = 0;
+
+      if (cart.length === 0) {
+        list.innerHTML = '<li>Your cart is empty.</li>';
+        totalBox.textContent = 'Total: Kshs 0.00';
+        return;
+      }
+
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.product} x ${item.qty} - Kshs ${(item.qty * item.price).toFixed(2)}`;
+        list.appendChild(li);
+        total += item.qty * item.price;
+      });
+
+      totalBox.textContent = `Total: Kshs ${total.toFixed(2)}`;
+    }
+
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const payment = document.getElementById('payment').value;
+      const message = document.getElementById('message');
+
+      if (!name || !email || !phone || !address || !payment) {
+        message.textContent = "Please fill all the fields.";
+        message.style.color = "red";
+        return;
+      }
+
+      if (getCart().length === 0) {
+        message.textContent = "Your cart is empty.";
+        message.style.color = "red";
+        return;
+      }
+
+      // Simulate successful order
+      message.textContent = `Thanks, ${name}! Your order has been placed.`;
+      message.style.color = "green";
+      localStorage.removeItem('cart');
+      renderCart();
+      this.reset();
+    });
+
+    window.onload = renderCart;
+  </script>
+</body>
+</html>

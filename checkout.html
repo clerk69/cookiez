@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout</title>
+</head>
+<body>
+  <h2>Checkout</h2>
+
+  <form id="checkout-form" action="/order" method="POST">
+    <input type="text" name="product" placeholder="Product" required>
+    <input type="number" name="quantity" placeholder="Quantity" required>
+    <input type="text" id="location" name="location" placeholder="Delivery Address" required>
+
+    <input type="hidden" id="lat" name="latitude">
+    <input type="hidden" id="lng" name="longitude">
+
+    <div id="map" style="height:300px;width:100%;margin:10px 0;"></div>
+
+    <button type="submit">Place Order</button>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var form = document.getElementById('checkout-form');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var phone = prompt("Enter your M-Pesa number:");
+        if (!phone) {
+          alert('Phone number required');
+          return;
+        }
+        var amount = 100;
+        fetch('/api/stkpush', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: phone, amount: amount })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          alert('Payment prompt sent to your phone!');
+          form.submit();
+        })
+        .catch(function (err) {
+          console.error(err);
+          alert('Payment failed!');
+        });
+      });
+    });
+
+    window.initMap = function () {
+      var map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: -1.2921, lng: 36.8219 },
+        zoom: 12
+      });
+
+      var marker = new google.maps.Marker({
+        position: map.getCenter(),
+        map: map,
+        draggable: true
+      });
+
+      document.getElementById('lat').value = marker.getPosition().lat();
+      document.getElementById('lng').value = marker.getPosition().lng();
+
+      marker.addListener('dragend', function(e) {
+        document.getElementById('lat').value = e.latLng.lat();
+        document.getElementById('lng').value = e.latLng.lng();
+      });
+
+      map.addListener('click', function(e) {
+        marker.setPosition(e.latLng);
+        document.getElementById('lat').value = e.latLng.lat();
+        document.getElementById('lng').value = e.latLng.lng();
+      });
+    };
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+</body>
+</html>
