@@ -212,7 +212,28 @@
       color: #43e97b;
     }
 
-    .checkout-btn {
+    .delivery-info {
+      text-align: left;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(67, 233, 123, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(67, 233, 123, 0.2);
+    }
+
+    .delivery-info h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #43e97b;
+    }
+
+    .delivery-info p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+    }
+
+    .confirm-btn {
       display: block;
       width: 100%;
       padding: 1rem 2rem;
@@ -228,12 +249,12 @@
       box-shadow: 0 8px 24px rgba(67, 233, 123, 0.3);
     }
 
-    .checkout-btn:hover {
+    .confirm-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 32px rgba(67, 233, 123, 0.5);
     }
 
-    .checkout-btn:disabled {
+    .confirm-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
@@ -249,6 +270,59 @@
       padding: 1rem;
       border-radius: 16px;
       border: 1px solid rgba(67, 233, 123, 0.2);
+    }
+
+    .success-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      
+      border: 1px solid rgba(67, 233, 123, 0.1);
+      border-radius: 24px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      color: #43e97b;
+      animation: bounce 1s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .success-message h3 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .success-message p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+    }
+
+    .order-details {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .order-details p {
+      margin: 0.5rem 0;
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .empty-cart {
@@ -322,9 +396,17 @@
         font-size: 1.6rem;
       }
 
-      .checkout-btn {
+      .confirm-btn {
         padding: 0.9rem 1.5rem;
         font-size: 1.1rem;
+      }
+
+      .success-message {
+        padding: 1.5rem;
+      }
+
+      .success-icon {
+        font-size: 3rem;
       }
     }
 
@@ -361,10 +443,22 @@
     <div id="cart-items" class="cart-items-container"></div>
     <div id="total-section" class="total-section" style="display: none;">
       <div id="total">Total: Kshs 0.00</div>
+      <div class="delivery-info">
+        <h4>Payment on Delivery</h4>
+        <p>No upfront payment required. Pay securely when your fresh cookies arrive!</p>
+        <p>Expected delivery: Within 24-48 hours in your area.</p>
+      </div>
     </div>
 
-    <button id="checkout-btn" class="checkout-btn" onclick="checkout()" style="display: none;">Proceed to Checkout</button>
+    <button id="confirm-btn" class="confirm-btn" onclick="confirmOrder()" style="display: none;">Confirm Order - Pay on Delivery</button>
     <div id="message" class="message" style="display: none;"></div>
+    <div id="success-section" class="success-message" style="display: none;">
+      <div class="success-icon">✅</div>
+      <h3>Order Confirmed!</h3>
+      <p>We've received your order. Get ready for some premium cookie bliss!</p>
+      <div id="order-details" class="order-details"></div>
+      <p>Payment will be collected upon delivery. Track your order via email.</p>
+    </div>
   </main>
 
   <footer>
@@ -377,8 +471,9 @@
       const cart = JSON.parse(localStorage.getItem("cart")) || [];
       const container = document.getElementById("cart-items");
       const totalSection = document.getElementById("total-section");
-      const checkoutBtn = document.getElementById("checkout-btn");
+      const confirmBtn = document.getElementById("confirm-btn");
       const message = document.getElementById("message");
+      const successSection = document.getElementById("success-section");
       container.innerHTML = "";
       let total = 0;
 
@@ -390,8 +485,9 @@
           </div>
         `;
         totalSection.style.display = "none";
-        checkoutBtn.style.display = "none";
+        confirmBtn.style.display = "none";
         message.style.display = "none";
+        successSection.style.display = "none";
         return;
       }
 
@@ -412,8 +508,9 @@
 
       document.getElementById("total").textContent = `Total: Kshs ${total.toFixed(2)}`;
       totalSection.style.display = "block";
-      checkoutBtn.style.display = "block";
+      confirmBtn.style.display = "block";
       message.style.display = "none";
+      successSection.style.display = "none";
     }
 
     function removeItem(index) {
@@ -423,7 +520,7 @@
       loadCart();
     }
 
-    function checkout() {
+    function confirmOrder() {
       const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
       if (cart.length === 0) {
@@ -432,18 +529,30 @@
       }
 
       const message = document.getElementById("message");
-      const checkoutBtn = document.getElementById("checkout-btn");
-      message.textContent = "Processing payment...";
+      const confirmBtn = document.getElementById("confirm-btn");
+      const successSection = document.getElementById("success-section");
+      const orderDetails = document.getElementById("order-details");
+
+      message.textContent = "Confirming your order...";
       message.style.display = "block";
-      checkoutBtn.disabled = true;
-      checkoutBtn.textContent = "Processing...";
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Confirming...";
+
+      // Build order details
+      let detailsHtml = "<h4 style='color: #43e97b; margin-bottom: 0.5rem;'>Order Summary</h4>";
+      cart.forEach(item => {
+        detailsHtml += `<p>${item.name} x ${item.qty || 1} - Kshs ${(item.price * (item.qty || 1)).toFixed(2)}</p>`;
+      });
+      detailsHtml += `<p><strong>Total: Kshs ${cart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0).toFixed(2)}</strong></p>`;
 
       setTimeout(() => {
         localStorage.removeItem("cart");
-        loadCart();
-        message.textContent = "✅ Checkout successful! Your order is being processed.";
-        checkoutBtn.disabled = false;
-        checkoutBtn.textContent = "Proceed to Checkout";
+        orderDetails.innerHTML = detailsHtml;
+        loadCart(); // This will hide cart items and button
+        message.style.display = "none";
+        successSection.style.display = "block";
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Confirm Order - Pay on Delivery";
       }, 2000);
     }
 
