@@ -21,7 +21,6 @@
       overflow-x: hidden;
     }
 
-    /* Animated background particles */
     body::before {
       content: "";
       position: fixed;
@@ -35,7 +34,6 @@
       z-index: 0;
     }
 
-    /* Modern Header */
     header {
       position: fixed;
       top: 0;
@@ -89,7 +87,6 @@
       box-shadow: 0 8px 24px rgba(67, 233, 123, 0.4);
     }
 
-    /* Main Content */
     main {
       max-width: 800px;
       margin: 140px auto 4rem;
@@ -233,6 +230,45 @@
       font-size: 0.95rem;
     }
 
+    .customer-form {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(67, 233, 123, 0.1);
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .customer-form h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #43e97b;
+    }
+
+    .customer-form label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .customer-form input,
+    .customer-form textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 12px;
+      border: 1px solid rgba(67, 233, 123, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .customer-form textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
     .confirm-btn {
       display: block;
       width: 100%;
@@ -278,7 +314,6 @@
       align-items: center;
       gap: 1rem;
       background: rgba(255, 255, 255, 0.05);
-      
       border: 1px solid rgba(67, 233, 123, 0.1);
       border-radius: 24px;
       padding: 2rem;
@@ -340,7 +375,6 @@
       background-clip: text;
     }
 
-    /* Footer */
     footer {
       background: rgba(15, 12, 41, 0.9);
       backdrop-filter: blur(20px);
@@ -358,7 +392,6 @@
       font-size: 0.95rem;
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
       .header-container {
         padding: 0 1.5rem;
@@ -408,6 +441,10 @@
       .success-icon {
         font-size: 3rem;
       }
+
+      .customer-form {
+        padding: 1.5rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -425,6 +462,11 @@
 
       .item-details h3 {
         font-size: 1.2rem;
+      }
+
+      .customer-form input,
+      .customer-form textarea {
+        padding: 0.6rem;
       }
     }
   </style>
@@ -450,12 +492,30 @@
       </div>
     </div>
 
-    <button id="confirm-btn" class="confirm-btn" onclick="confirmOrder()" style="display: none;">Confirm Order - Pay on Delivery</button>
+    <div id="customer-form" class="customer-form" style="display: none;">
+      <h2>Your Details</h2>
+      <form id="order-form">
+        <div style="margin-bottom: 1rem;">
+          <label for="name">Name:</label>
+          <input type="text" id="name" required>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <label for="phone">Phone Number:</label>
+          <input type="tel" id="phone" required pattern="[+]?[0-9]{10,}">
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <label for="address">Delivery Address:</label>
+          <textarea id="address" required></textarea>
+        </div>
+      </form>
+    </div>
+
+    <button id="confirm-btn" class="confirm-btn" onclick="confirmOrder()">Confirm Order - Pay on Delivery</button>
     <div id="message" class="message" style="display: none;"></div>
     <div id="success-section" class="success-message" style="display: none;">
       <div class="success-icon">✅</div>
       <h3>Order Confirmed!</h3>
-      <p>We've received your order. Get ready for some premium cookie bliss!</p>
+      <p>We've received your order. Get ready for some premium cookie bliss! Please check the new WhatsApp tab and send the message to complete your order.</p>
       <div id="order-details" class="order-details"></div>
       <p>Payment will be collected upon delivery.</p>
     </div>
@@ -468,9 +528,10 @@
   <script>
     // Load and display the cart
     function loadCart() {
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const cart = JSON.parse(sessionStorage.getItem("cart")) || [];
       const container = document.getElementById("cart-items");
       const totalSection = document.getElementById("total-section");
+      const customerForm = document.getElementById("customer-form");
       const confirmBtn = document.getElementById("confirm-btn");
       const message = document.getElementById("message");
       const successSection = document.getElementById("success-section");
@@ -485,6 +546,7 @@
           </div>
         `;
         totalSection.style.display = "none";
+        customerForm.style.display = "none";
         confirmBtn.style.display = "none";
         message.style.display = "none";
         successSection.style.display = "none";
@@ -508,48 +570,76 @@
 
       document.getElementById("total").textContent = `Total: Kshs ${total.toFixed(2)}`;
       totalSection.style.display = "block";
+      customerForm.style.display = "block";
       confirmBtn.style.display = "block";
       message.style.display = "none";
       successSection.style.display = "none";
     }
 
     function removeItem(index) {
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let cart = JSON.parse(sessionStorage.getItem("cart")) || [];
       cart.splice(index, 1);
-      localStorage.setItem("cart", JSON.stringify(cart));
+      sessionStorage.setItem("cart", JSON.stringify(cart));
       loadCart();
     }
 
     function confirmOrder() {
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const messageEl = document.getElementById("message");
+      const confirmBtn = document.getElementById("confirm-btn");
+      const successSection = document.getElementById("success-section");
+      const orderDetails = document.getElementById("order-details");
 
       if (cart.length === 0) {
         alert("Your cart is empty.");
         return;
       }
 
-      const message = document.getElementById("message");
-      const confirmBtn = document.getElementById("confirm-btn");
-      const successSection = document.getElementById("success-section");
-      const orderDetails = document.getElementById("order-details");
+      if (!name || !phone || !address) {
+        alert("Please fill in all your details.");
+        return;
+      }
 
-      message.textContent = "Confirming your order...";
-      message.style.display = "block";
+      messageEl.textContent = "Confirming your order...";
+      messageEl.style.display = "block";
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Confirming...";
 
-      // Build order details
+      // Build order summary for success page
       let detailsHtml = "<h4 style='color: #43e97b; margin-bottom: 0.5rem;'>Order Summary</h4>";
       cart.forEach(item => {
         detailsHtml += `<p>${item.name} x ${item.qty || 1} - Kshs ${(item.price * (item.qty || 1)).toFixed(2)}</p>`;
       });
       detailsHtml += `<p><strong>Total: Kshs ${cart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0).toFixed(2)}</strong></p>`;
+      detailsHtml += `<p>Name: ${name}</p><p>Phone: ${phone}</p><p>Address: ${address}</p>`;
+
+      // Build WhatsApp message
+      let waText = "New Order from 420 Cookiez!\n\n";
+      waText += `Name: ${name}\n`;
+      waText += `Phone: ${phone}\n`;
+      waText += `Address: ${address}\n\n`;
+      waText += "Items:\n";
+      cart.forEach(item => {
+        waText += `- ${item.name} x ${item.qty || 1} (Kshs ${(item.price * (item.qty || 1)).toFixed(2)})\n`;
+      });
+      waText += `\nTotal: Kshs ${cart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0).toFixed(2)}\n`;
+      waText += "\nPayment on Delivery. Please confirm!";
+
+      const encodedText = encodeURIComponent(waText);
+      const adminNumber = "254793561914"; // From index.html
 
       setTimeout(() => {
-        localStorage.removeItem("cart");
+        // Open WhatsApp in new tab
+        window.open(`https://wa.me/${adminNumber}?text=${encodedText}`, '_blank');
+
+        // Clear cart and show success
+        sessionStorage.removeItem("cart");
         orderDetails.innerHTML = detailsHtml;
-        loadCart(); // This will hide cart items and button
-        message.style.display = "none";
+        loadCart();
+        messageEl.style.display = "none";
         successSection.style.display = "block";
         confirmBtn.disabled = false;
         confirmBtn.textContent = "Confirm Order - Pay on Delivery";

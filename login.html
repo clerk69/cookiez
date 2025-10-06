@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +26,6 @@
       padding: 2rem;
     }
 
-    /* Animated background particles */
     body::before {
       content: "";
       position: fixed;
@@ -39,7 +39,6 @@
       z-index: 0;
     }
 
-    /* Modern Navbar */
     header {
       position: fixed;
       top: 0;
@@ -112,7 +111,6 @@
       width: 100%;
     }
 
-    /* Mobile Menu Toggle */
     .menu-toggle {
       display: none;
       flex-direction: column;
@@ -128,7 +126,18 @@
       transition: all 0.3s ease;
     }
 
-    /* Login Card */
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(8px, 8px);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+
     .login-container {
       position: relative;
       z-index: 1;
@@ -276,7 +285,6 @@
       }
     }
 
-    /* Responsive Design */
     @media (max-width: 640px) {
       .menu-toggle {
         display: flex;
@@ -334,7 +342,7 @@
     <div class="login-card">
       <h2>Login</h2>
       <form id="login-form">
-        <input type="email" id="login-email" placeholder="Email" required />
+        <input type="email" id="login-email" placeholder="Email" required autofocus />
         <input type="password" id="login-password" placeholder="Password" required />
         <button type="submit">Login</button>
         <div class="message" id="login-message"></div>
@@ -350,6 +358,15 @@
     
     menuToggle.addEventListener('click', () => {
       nav.classList.toggle('active');
+      menuToggle.classList.toggle('active');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target) && !menuToggle.contains(e.target)) {
+        nav.classList.remove('active');
+        menuToggle.classList.remove('active');
+      }
     });
 
     // Scroll effect for header
@@ -379,9 +396,12 @@
       let user = users.find(u => u.email === email && u.password === password);
 
       if (user) {
+        sessionStorage.setItem('loginStatus', JSON.stringify({
+          isLoggedIn: true,
+          user: { email: user.email }
+        }));
         message.textContent = 'Login successful! Redirecting...';
         message.style.color = '#43e97b';
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
         setTimeout(() => window.location.href = 'index.html', 1500);
       } else {
         message.textContent = 'Invalid email or password.';

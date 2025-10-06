@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +26,6 @@
       padding: 2rem;
     }
 
-    /* Animated background particles */
     body::before {
       content: "";
       position: fixed;
@@ -39,7 +39,6 @@
       z-index: 0;
     }
 
-    /* Modern Navbar */
     header {
       position: fixed;
       top: 0;
@@ -112,7 +111,6 @@
       width: 100%;
     }
 
-    /* Mobile Menu Toggle */
     .menu-toggle {
       display: none;
       flex-direction: column;
@@ -128,7 +126,18 @@
       transition: all 0.3s ease;
     }
 
-    /* Signup Card */
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(8px, 8px);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+
     .signup-container {
       position: relative;
       z-index: 1;
@@ -276,7 +285,6 @@
       }
     }
 
-    /* Responsive Design */
     @media (max-width: 640px) {
       .menu-toggle {
         display: flex;
@@ -348,6 +356,15 @@
     
     menuToggle.addEventListener('click', () => {
       nav.classList.toggle('active');
+      menuToggle.classList.toggle('active');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target) && !menuToggle.contains(e.target)) {
+        nav.classList.remove('active');
+        menuToggle.classList.remove('active');
+      }
     });
 
     // Scroll effect for header
@@ -377,7 +394,7 @@
       let users = JSON.parse(localStorage.getItem('users') || '[]');
 
       // Check if email already exists
-      if(users.find(user => user.email === email)) {
+      if (users.find(user => user.email === email)) {
         message.textContent = 'Email is already registered.';
         message.style.color = '#ff6b6b';
         return;
@@ -387,11 +404,12 @@
       users.push({ email, password });
       localStorage.setItem('users', JSON.stringify(users));
 
-      message.textContent = 'Signup successful! You can now login.';
+      message.textContent = 'Signup successful! Redirecting to login...';
       message.style.color = '#43e97b';
 
-      // Clear form after success
+      // Clear form and redirect to login
       this.reset();
+      setTimeout(() => window.location.href = 'login.html', 1500);
     });
   </script>
 </body>
